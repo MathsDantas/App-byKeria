@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "163624883384",
+    "project_id": "bykeria-app",
+    "storage_bucket": "bykeria-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:163624883384:android:1e56bd1d1ae2cd57f6104d",
+        "android_client_info": {
+          "package_name": "com.seuapp.bykeria"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCZaRJ9qxOhHLBRryTrdGDFrDS9c5PEP3U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
