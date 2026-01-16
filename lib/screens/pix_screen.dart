@@ -1,45 +1,19 @@
 import 'package:bike_app/screens/home_screen.dart';
+import 'package:bike_app/screens/profile_screen.dart';
 import 'package:bike_app/screens/welcome_screen.dart';
 import 'package:bike_app/services/user_session.dart';
+import 'package:bike_app/theme/app_colors.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import '../services/auth_service.dart';
-import '../theme/app_colors.dart';
-import 'profile_edit_page.dart';
 
-class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({super.key});
-
-  @override
-  State<ProfileScreen> createState() => _ProfileScreenState();
-}
-
-class _ProfileScreenState extends State<ProfileScreen> {
-  final AuthService _authService = AuthService();
-  Map<String, dynamic>? _userData;
-  bool _isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadProfile();
-  }
-
-  Future<void> _loadProfile() async {
-    final data = await _authService.getUserData();
-    if (mounted) {
-      setState(() {
-        _userData = data;
-        _isLoading = false;
-      });
-    }
-  }
+class PixScreen extends StatelessWidget {
+  const PixScreen({super.key});
 
   Future<void> _logout(BuildContext context) async {
     await FirebaseAuth.instance.signOut();
     UserSession.instance.clear();
 
-    if (!mounted) return;
+    if (!context.mounted) return;
 
     Navigator.pushAndRemoveUntil(
       context,
@@ -51,7 +25,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.dark,
+      backgroundColor: AppColors.yellowTrue,
 
       // 🔹 MENU SANDUÍCHE
       drawer: Drawer(
@@ -141,117 +115,109 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ],
       ),
 
-      // 🔹 BODY
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : Column(
+      // 🟡 CONTEÚDO
+      body: SafeArea(
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 360),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                const SizedBox(height: 80),
+                const SizedBox(height: 50),
 
-                /// 👤 HEADER PERFIL
-                CircleAvatar(
-                  radius: 60,
-                  backgroundImage:
-                      _userData!['photoUrl'] != null &&
-                          _userData!['photoUrl'].toString().isNotEmpty
-                      ? NetworkImage(_userData!['photoUrl'])
-                      : const AssetImage('assets/images/profile.png')
-                            as ImageProvider,
-                ),
-
-                const SizedBox(height: 16),
-
-                Text(
-                  _userData!['name'] ?? '',
+                // TÍTULO
+                const Text(
+                  'Sua chave PIX',
+                  textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 22,
+                    fontSize: 60,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.yellow,
+                    height: 1.15,
+                    color: Color(0xFF2D2D2D),
                   ),
                 ),
 
-                const SizedBox(height: 8),
+                const Spacer(),
 
-                SizedBox(
-                  height: 34,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.yellow,
-                      foregroundColor: AppColors.dark,
-                      elevation: 1,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                        side: BorderSide(color: AppColors.dark),
-                      ),
-                    ),
-                    onPressed: () async {
-                      await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const ProfileEditPage(),
-                        ),
-                      );
-                      _loadProfile();
-                    },
-                    child: const Text(
-                      'Editar perfil',
-                      style: TextStyle(fontSize: 15),
-                    ),
-                  ),
-                ),
+                const SizedBox(height: 24),
 
-                const SizedBox(height: 32),
-
-                /// 📊 CARD DE ESTATÍSTICAS
+                // 🗺️ CARD DO MAPA
                 Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 16),
-                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  width: double.infinity,
+                  margin: const EdgeInsets.symmetric(horizontal: 35),
                   decoration: BoxDecoration(
-                    color: AppColors.dark,
-                    borderRadius: BorderRadius.circular(20),
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(15),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Colors.black26,
+                        blurRadius: 10,
+                        offset: Offset(0, 4),
+                      ),
+                    ],
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  child: Stack(
                     children: [
-                      _ProfileStat(value: '10', label: 'Bikes alugadas'),
-                      _ProfileStat(value: '98', label: 'Km rodados'),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: Image.asset(
+                          'assets/images/qrcode.png',
+                          fit: BoxFit.cover,
+                          height: 300,
+                          width: double.infinity,
+                        ),
+                      ),
                     ],
                   ),
                 ),
 
-                const SizedBox(height: 24),
+                const SizedBox(height: 28),
+
+                // TEXTO
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 32),
+                  child: Text(
+                    'Copiar chave para área de transferência',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 16, color: AppColors.darkTrue),
+                  ),
+                ),
+
+                const Spacer(),
+
+                // BOTÃO PIX
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 80),
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.black,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 36,
+                        vertical: 16,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                      elevation: 6,
+                    ),
+                    onPressed: () {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (_) => const HomeScreen()),
+                      );
+                    },
+                    child: const Text(
+                      'Voltar à tela inicial',
+                      style: TextStyle(fontSize: 16),
+                    ),
+                  ),
+                ),
               ],
             ),
-    );
-  }
-}
-
-class _ProfileStat extends StatelessWidget {
-  final String value;
-  final String label;
-
-  const _ProfileStat({required this.value, required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 60,
-            fontWeight: FontWeight.bold,
-            color: AppColors.yellow,
           ),
         ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 20, color: AppColors.yellow),
-        ),
-      ],
+      ),
     );
   }
 }

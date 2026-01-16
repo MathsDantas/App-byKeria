@@ -56,7 +56,7 @@ class _LoginScreenState extends State<LoginScreen> {
         backgroundColor: AppColors.dark,
         elevation: 0,
         centerTitle: true,
-        title: const Text(
+        title: Text(
           'byKeria',
           style: TextStyle(
             color: AppColors.yellow,
@@ -74,7 +74,7 @@ class _LoginScreenState extends State<LoginScreen> {
               // X
               IconButton(
                 padding: EdgeInsets.zero,
-                icon: const Icon(Icons.close, color: AppColors.yellow),
+                icon: Icon(Icons.close, color: AppColors.yellow),
                 onPressed: () {
                   Navigator.pushAndRemoveUntil(
                     context,
@@ -153,8 +153,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     onPressed: _isLoading ? null : _login,
                     child: _isLoading
-                        ? const CircularProgressIndicator(color: AppColors.dark)
-                        : const Text(
+                        ? CircularProgressIndicator(color: AppColors.dark)
+                        : Text(
                             'Acessar',
                             style: TextStyle(
                               fontSize: 16,

@@ -1,10 +1,23 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  static const Color yellow = Color(0xFFF1DB4B);
-  static const Color dark = Color(0xFF2D2D2D);
-  static const Color white = Colors.white;
-  static const Color gray = Colors.grey;
-  static const Color lightInput = Color(0xFFF5F5F5);
-  static const Color purple = Color(0xFF4E148C);
+  // Se é dark mode ou não
+  static bool isDark = true;
+
+  static Color get yellow =>
+      isDark ? const Color(0xFFF1DB4B) : const Color.fromARGB(255, 0, 0, 0);
+
+  static Color get yellowTrue => const Color(0xFFF1DB4B);
+  static Color get darkTrue => const Color(0xFF2D2D2D);
+
+  // Aqui mudamos o valor dinamicamente sem alterar o nome
+  static Color get dark => isDark
+      ? const Color(0xFF2D2D2D)
+      : const Color.fromARGB(255, 248, 242, 180);
+  static Color get white => isDark ? Colors.white : Colors.black;
+  static Color get gray => Colors.grey;
+  static Color get lightInput => isDark
+      ? const Color.fromARGB(255, 0, 0, 0)
+      : const Color.fromARGB(255, 0, 0, 0);
+  static Color get purple => const Color(0xFF4E148C);
 }

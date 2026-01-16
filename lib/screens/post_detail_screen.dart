@@ -4,6 +4,8 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '/models/bike_post.dart';
 import '../theme/app_colors.dart';
 
+import 'scan_qr_page.dart';
+
 class PostDetailScreen extends StatelessWidget {
   final BikePost post;
 
@@ -20,7 +22,7 @@ class PostDetailScreen extends StatelessWidget {
         backgroundColor: AppColors.dark,
         elevation: 0,
         centerTitle: true,
-        title: const Text(
+        title: Text(
           'byKeria',
           style: TextStyle(
             color: AppColors.yellow,
@@ -29,7 +31,7 @@ class PostDetailScreen extends StatelessWidget {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.close, color: AppColors.yellow),
+            icon: Icon(Icons.close, color: AppColors.yellow),
             onPressed: () => Navigator.pop(context),
           ),
         ],
@@ -46,17 +48,14 @@ class PostDetailScreen extends StatelessWidget {
               children: [
                 Text(
                   post.name,
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: AppColors.white,
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 const SizedBox(height: 4),
-                Text(
-                  post.address,
-                  style: const TextStyle(color: Colors.white70),
-                ),
+                Text(post.address, style: TextStyle(color: AppColors.white)),
               ],
             ),
           ),
@@ -86,8 +85,8 @@ class PostDetailScreen extends StatelessWidget {
           // RODAPÉ
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(16),
-            color: AppColors.yellow,
+            padding: const EdgeInsets.all(20),
+            color: AppColors.yellowTrue,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -96,7 +95,7 @@ class PostDetailScreen extends StatelessWidget {
                   children: [
                     Text(
                       post.openingHours,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
                         color: AppColors.purple,
@@ -104,28 +103,34 @@ class PostDetailScreen extends StatelessWidget {
                     ),
                     Text(
                       post.openingDays,
-                      style: const TextStyle(color: AppColors.purple),
+                      style: TextStyle(color: AppColors.purple),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       '${post.availableBikes} bicicletas disponíveis',
-                      style: const TextStyle(fontWeight: FontWeight.w500),
+                      style: TextStyle(
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.purple,
+                      ),
                     ),
                   ],
                 ),
 
                 ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.yellow,
-                    foregroundColor: AppColors.dark,
+                    backgroundColor: AppColors.yellowTrue,
+                    foregroundColor: Colors.black,
                     elevation: 0,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30),
-                      side: const BorderSide(color: AppColors.dark),
+                      side: BorderSide(color: Colors.black),
                     ),
                   ),
                   onPressed: () {
-                    // futura ação QR Code
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const ScanQrPage()),
+                    );
                   },
                   icon: const Icon(Icons.qr_code),
                   label: const Text(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
+import '../theme/app_colors.dart';
 import 'login_screen.dart';
 import 'welcome_screen.dart';
 
@@ -13,34 +14,25 @@ class RegisterScreen extends StatefulWidget {
 class _RegisterScreenState extends State<RegisterScreen> {
   final AuthService _authService = AuthService();
 
-  final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _cpfController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController =
-      TextEditingController();
+  final _nameController = TextEditingController();
+  final _cpfController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
 
   bool _isLoading = false;
-
-  Widget _requiredFieldText() {
-    return const Padding(
-      padding: EdgeInsets.only(top: 4),
-      child: Text(
-        '*campo obrigatório',
-        style: TextStyle(fontSize: 12, color: Colors.black54),
-      ),
-    );
-  }
+  String? _error;
 
   Future<void> _register() async {
     if (_passwordController.text != _confirmPasswordController.text) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('As senhas não conferem')));
+      setState(() => _error = 'As senhas não conferem');
       return;
     }
 
-    setState(() => _isLoading = true);
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
 
     try {
       await _authService.register(
@@ -52,162 +44,178 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
       if (!mounted) return;
 
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Conta criada com sucesso')));
-
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const LoginScreen()),
       );
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(e.toString())));
+      setState(() {
+        _error = e.toString().replaceAll('Exception: ', '');
+      });
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
   }
 
-  @override
-  void dispose() {
-    _nameController.dispose();
-    _cpfController.dispose();
-    _emailController.dispose();
-    _passwordController.dispose();
-    _confirmPasswordController.dispose();
-    super.dispose();
+  InputDecoration _inputDecoration(String hint) {
+    return InputDecoration(
+      hintText: hint,
+      filled: true,
+      fillColor: AppColors.lightInput,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(30),
+        borderSide: BorderSide.none,
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    const Color yellow = Color(0xFFF1DB4B);
-    const Color dark = Color(0xFF2D2D2D);
-
     return Scaffold(
-      backgroundColor: yellow,
-      resizeToAvoidBottomInset: true,
+      backgroundColor: AppColors.dark,
+      resizeToAvoidBottomInset: true, // importante
 
       appBar: AppBar(
-        backgroundColor: dark,
+        backgroundColor: AppColors.dark,
         elevation: 0,
         centerTitle: true,
-        title: const Text(
+        title: Text(
           'byKeria',
-          style: TextStyle(color: yellow, fontWeight: FontWeight.bold),
-        ),
-        leading: IconButton(
-          icon: const Icon(Icons.close, color: yellow),
-          onPressed: () {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (_) => const WelcomeScreen()),
-            );
-          },
+          style: TextStyle(
+            color: AppColors.yellow,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
 
       body: SafeArea(
         child: SingleChildScrollView(
+          // ⬅️ permite rolagem quando o teclado aparece
           padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 24),
+              IconButton(
+                padding: EdgeInsets.zero,
+                icon: Icon(Icons.close, color: AppColors.yellow),
+                onPressed: () {
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (_) => const WelcomeScreen()),
+                    (_) => false,
+                  );
+                },
+              ),
 
-              TextField(
-                controller: _nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Nome',
-                  border: OutlineInputBorder(),
+              const SizedBox(height: 1),
+
+              Center(
+                child: Text(
+                  'Criar conta',
+                  style: TextStyle(
+                    color: AppColors.yellow,
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
-              _requiredFieldText(),
-
-              const SizedBox(height: 16),
-
-              TextField(
-                controller: _cpfController,
-                decoration: const InputDecoration(
-                  labelText: 'CPF',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              _requiredFieldText(),
-
-              const SizedBox(height: 16),
-
-              TextField(
-                controller: _emailController,
-                decoration: const InputDecoration(
-                  labelText: 'Email',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              _requiredFieldText(),
-
-              const SizedBox(height: 16),
-
-              TextField(
-                controller: _passwordController,
-                obscureText: true,
-                decoration: const InputDecoration(
-                  labelText: 'Senha',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              _requiredFieldText(),
-
-              const SizedBox(height: 16),
-
-              TextField(
-                controller: _confirmPasswordController,
-                obscureText: true,
-                decoration: const InputDecoration(
-                  labelText: 'Confirmar senha',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              _requiredFieldText(),
 
               const SizedBox(height: 32),
 
-              SizedBox(
-                width: double.infinity,
-                height: 48,
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : _register,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: dark,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                  ),
-                  child: _isLoading
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text(
-                          'Criar conta',
-                          style: TextStyle(color: Colors.white),
-                        ),
-                ),
+              Text('Nome', style: TextStyle(color: AppColors.white)),
+              const SizedBox(height: 8),
+              TextField(
+                controller: _nameController,
+                decoration: _inputDecoration('Digite seu nome...'),
               ),
 
               const SizedBox(height: 16),
 
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text('Já tem uma conta? '),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (_) => const LoginScreen()),
-                      );
-                    },
-                    child: const Text('Fazer login'),
+              Text('CPF', style: TextStyle(color: AppColors.white)),
+              const SizedBox(height: 8),
+              TextField(
+                controller: _cpfController,
+                decoration: _inputDecoration('Digite seu CPF...'),
+              ),
+
+              const SizedBox(height: 16),
+
+              Text('Email', style: TextStyle(color: AppColors.white)),
+              const SizedBox(height: 8),
+              TextField(
+                controller: _emailController,
+                decoration: _inputDecoration('Digite seu email...'),
+              ),
+
+              const SizedBox(height: 16),
+
+              Text('Senha', style: TextStyle(color: AppColors.white)),
+              const SizedBox(height: 8),
+              TextField(
+                controller: _passwordController,
+                obscureText: true,
+                decoration: _inputDecoration('Digite sua senha...'),
+              ),
+
+              const SizedBox(height: 16),
+
+              Text('Confirmar senha', style: TextStyle(color: AppColors.white)),
+              const SizedBox(height: 8),
+              TextField(
+                controller: _confirmPasswordController,
+                obscureText: true,
+                decoration: _inputDecoration('Confirme sua senha...'),
+              ),
+
+              if (_error != null) ...[
+                const SizedBox(height: 12),
+                Text(_error!, style: const TextStyle(color: Colors.redAccent)),
+              ],
+
+              const SizedBox(height: 32),
+
+              Center(
+                child: SizedBox(
+                  width: 200,
+                  height: 48,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.yellow,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                      elevation: 6,
+                    ),
+                    onPressed: _isLoading ? null : _register,
+                    child: _isLoading
+                        ? CircularProgressIndicator(color: AppColors.dark)
+                        : Text(
+                            'Criar conta',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: AppColors.dark,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                   ),
-                ],
+                ),
+              ),
+
+              const SizedBox(height: 24),
+
+              Center(
+                child: TextButton(
+                  onPressed: () {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (_) => const LoginScreen()),
+                    );
+                  },
+                  child: Text(
+                    'Já tem conta? Fazer login',
+                    style: TextStyle(color: AppColors.yellow),
+                  ),
+                ),
               ),
             ],
           ),

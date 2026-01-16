@@ -1,52 +1,109 @@
+import 'package:bike_app/screens/welcome_screen.dart';
+import 'package:bike_app/services/auth_service.dart';
+import 'package:bike_app/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../services/user_session.dart';
 
 import '../data/mock_bike_posts.dart';
 import '../models/bike_post.dart';
 import 'post_detail_screen.dart';
 import 'profile_screen.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
-  static const Color yellow = Color(0xFFF1DB4B);
-  static const Color dark = Color(0xFF2D2D2D);
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  final AuthService _authService = AuthService();
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUser();
+  }
+
+  Future<void> _loadUser() async {
+    final data = await _authService.getUserData();
+    if (data != null) {
+      UserSession.instance.setUser(data);
+    }
+
+    if (mounted) {
+      setState(() => _isLoading = false);
+    }
+  }
 
   Future<void> _logout(BuildContext context) async {
     await FirebaseAuth.instance.signOut();
-    // NÃO navega manualmente
-    // AuthGate cuida disso
+    UserSession.instance.clear();
+
+    if (!mounted) return;
+
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (_) => const WelcomeScreen()),
+      (_) => false,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: yellow,
+      backgroundColor: AppColors.dark,
 
       // 🔹 MENU SANDUÍCHE
       drawer: Drawer(
-        backgroundColor: dark,
+        backgroundColor: AppColors.dark,
         child: SafeArea(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Padding(
-                padding: EdgeInsets.all(16),
+              Padding(
+                padding: const EdgeInsets.all(16),
                 child: Text(
                   'byKeria',
                   style: TextStyle(
-                    color: yellow,
+                    color: AppColors.yellow,
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
 
-              const Divider(color: Colors.white24),
+              Divider(color: AppColors.gray),
+
+              // 🔹 SWITCH CLARO/ESCURO
+              ListTile(
+                leading: Icon(
+                  AppColors.isDark ? Icons.dark_mode : Icons.light_mode,
+                  color: AppColors.yellow,
+                ),
+                title: Text(
+                  AppColors.isDark ? 'Modo Escuro' : 'Modo Claro',
+                  style: TextStyle(color: AppColors.yellow),
+                ),
+                trailing: Switch(
+                  value: AppColors.isDark,
+                  onChanged: (val) {
+                    // alterna o tema
+                    AppColors.isDark = val;
+                    // força rebuild da tela para aplicar cores
+                    (context as Element).reassemble(); // simples e rápido
+                  },
+                  activeColor: AppColors.yellow,
+                ),
+              ),
+
+              Divider(color: AppColors.gray),
 
               ListTile(
-                leading: const Icon(Icons.logout, color: yellow),
-                title: const Text('Sair', style: TextStyle(color: yellow)),
+                leading: Icon(Icons.logout, color: AppColors.yellow),
+                title: Text('Sair', style: TextStyle(color: AppColors.yellow)),
                 onTap: () async {
                   Navigator.pop(context); // fecha o drawer
                   await _logout(context);
@@ -58,22 +115,25 @@ class HomeScreen extends StatelessWidget {
       ),
 
       appBar: AppBar(
-        backgroundColor: dark,
+        backgroundColor: AppColors.dark,
         elevation: 0,
         centerTitle: true,
-        title: const Text(
+        title: Text(
           'byKeria',
-          style: TextStyle(color: yellow, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: AppColors.yellow,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         leading: Builder(
           builder: (context) => IconButton(
-            icon: const Icon(Icons.menu, color: yellow),
+            icon: Icon(Icons.menu, color: AppColors.yellow),
             onPressed: () => Scaffold.of(context).openDrawer(),
           ),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.person_outline, color: yellow),
+            icon: Icon(Icons.person_outline, color: AppColors.yellow),
             onPressed: () {
               Navigator.push(
                 context,
@@ -84,48 +144,51 @@ class HomeScreen extends StatelessWidget {
         ],
       ),
 
-      body: Column(
-        children: [
-          // Boas-vindas
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: const [
-                Text(
-                  'Bem-vindo, Matheus',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: dark,
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 24,
+                  ),
+                  child: Column(
+                    children: [
+                      Text(
+                        'Boas-vindas, ${UserSession.instance.name}!',
+                        style: TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.white,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Onde vamos pedalar hoje?',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 18, color: AppColors.white),
+                      ),
+                    ],
                   ),
                 ),
-                SizedBox(height: 8),
-                Text(
-                  'Onde vamos pedalar hoje?',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 18, color: dark),
+
+                Divider(height: 1, color: AppColors.dark),
+
+                // Lista de postos
+                Expanded(
+                  child: ListView.separated(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: mockBikePosts.length,
+                    separatorBuilder: (_, _) => const SizedBox(height: 16),
+                    itemBuilder: (context, index) {
+                      final BikePost post = mockBikePosts[index];
+                      return BikePostCard(post: post);
+                    },
+                  ),
                 ),
               ],
             ),
-          ),
-
-          const Divider(height: 1, color: dark),
-
-          // Lista de postos
-          Expanded(
-            child: ListView.separated(
-              padding: const EdgeInsets.all(16),
-              itemCount: mockBikePosts.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 16),
-              itemBuilder: (context, index) {
-                final BikePost post = mockBikePosts[index];
-                return BikePostCard(post: post);
-              },
-            ),
-          ),
-        ],
-      ),
     );
   }
 }
@@ -174,7 +237,7 @@ class BikePostCard extends StatelessWidget {
                   children: [
                     Text(
                       post.name,
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: Colors.white,
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -182,7 +245,7 @@ class BikePostCard extends StatelessWidget {
                     ),
                     Text(
                       '${post.availableBikes} bicicletas disponíveis',
-                      style: const TextStyle(color: Colors.white70),
+                      style: TextStyle(color: Colors.white),
                     ),
                   ],
                 ),

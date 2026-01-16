@@ -54,6 +54,29 @@ class AuthService {
   }
 
   // ===============================
+  // ATUALIZAR DADOS DO USUÁRIO
+  // ===============================
+  Future<void> updateUserData({
+    required String name,
+    required String email,
+    required String cpf,
+    String? phone,
+    String? photoUrl,
+  }) async {
+    final user = currentUser;
+    if (user == null) throw Exception('Usuário não autenticado');
+
+    await _firestore.collection('users').doc(user.uid).update({
+      'name': name,
+      'email': email,
+      'cpf': cpf,
+      'phone': phone,
+      'photoUrl': photoUrl,
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  // ===============================
   // LOGOUT
   // ===============================
   Future<void> logout() async {
